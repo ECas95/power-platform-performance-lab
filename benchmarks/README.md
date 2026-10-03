@@ -12,11 +12,15 @@ Benchmarks are numbered so results and discussions remain easy to reference. Sta
 | B006 | How does Dataverse query payload width affect retrieval behavior? | Canvas Apps / Dataverse | L0 |
 | B007 | How does controlled flow concurrency affect throughput, throttling, retries, and correctness? | Power Automate | L0 |
 | B008 | How effective is data row limit = 1 at exposing accidental nondelegable logic? | Canvas Apps | L0 |
+| B009 | What happens when concurrent clients allocate a sequential business ID with client-side max + 1? | Canvas Apps / Dataverse | L0 |
+| B010 | How do pagination and checkpoints compare with full client-side materialization for large workloads? | Power Automate / Canvas Apps | L0 |
 
 No benchmark becomes L3 until repeated raw measurements, correctness validation, environment metadata, and reproduction steps have been published.
 
 ## Execution order
 
-The recommended first execution sequence is B001 → B003 → B006 → B004 → B002/B005 → B007 → B008.
+Recommended first sequence:
 
-This order establishes data-access and instrumentation behavior before testing more environment-sensitive startup and flow scenarios.
+B001 → B003 → B006 → B004 → B009 → B002/B005 → B007 → B010 → B008
+
+This establishes data-access and instrumentation behavior before testing more environment-sensitive startup, concurrency, and large-volume scenarios.
