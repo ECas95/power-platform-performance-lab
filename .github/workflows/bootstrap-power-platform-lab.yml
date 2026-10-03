@@ -1,0 +1,105 @@
+name: Bootstrap Power Platform Performance Lab
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment_url:
+        description: "Non-production Dataverse environment URL"
+        required: true
+        type: string
+      seed_count:
+        description: "Synthetic Benchmark Record rows to seed"
+        required: true
+        default: "500"
+        type: choice
+        options:
+          - "0"
+          - "500"
+          - "2000"
+          - "10000"
+          - "50000"
+      seed:
+        description: "Deterministic dataset seed"
+        required: true
+        default: "42"
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  bootstrap:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Power Platform tools
+        uses: microsoft/powerplatform-actions/actions-install@v1
+
+      - name: Authenticate with GitHub federation
+        shell: pwsh
+        run: |
+          if (-not "${{ vars.POWERPLATFORM_TENANT_ID }}") {
+            throw "Repository variable POWERPLATFORM_TENANT_ID is required."
+          }
+          if (-not "${{ vars.POWERPLATFORM_CLIENT_ID }}") {
+            throw "Repository variable POWERPLATFORM_CLIENT_ID is required."
+          }
+
+          pac auth create `
+            --name "pppl-ci" `
+            --environment "${{ inputs.environment_url }}" `
+            --applicationId "${{ vars.POWERPLATFORM_CLIENT_ID }}" `
+            --tenant "${{ vars.POWERPLATFORM_TENANT_ID }}" `
+            --githubFederated
+
+          pac auth who
+
+      - name: Bootstrap solution and Dataverse tables
+        shell: pwsh
+        run: |
+          ./power-platform/bootstrap/Bootstrap-PerformanceLab.ps1 `
+            -EnvironmentUrl "${{ inputs.environment_url }}"
+
+      - name: Seed synthetic benchmark data
+        if: ${{ inputs.seed_count != '0' }}
+        shell: pwsh
+        run: |
+          ./power-platform/bootstrap/Seed-PerformanceLab.ps1 `
+            -EnvironmentUrl "${{ inputs.environment_url }}" `
+            -Count ([int]"${{ inputs.seed_count }}") `
+            -Seed ([int]"${{ inputs.seed }}")
+
+      - name: Validate lab metadata
+        shell: pwsh
+        run: |
+          ./power-platform/bootstrap/Test-PerformanceLab.ps1 `
+            -EnvironmentUrl "${{ inputs.environment_url }}"
+
+      - name: Export unmanaged solution
+        shell: pwsh
+        run: |
+          pac solution export `
+            --name "PowerPlatformPerformanceLab" `
+            --path "$env:RUNNER_TEMP/PowerPlatformPerformanceLab.zip" `
+            --managed false `
+            --overwrite
+
+      - name: Unpack solution
+        uses: microsoft/powerplatform-actions/unpack-solution@v1
+        with:
+          solution-file: ${{ runner.temp }}/PowerPlatformPerformanceLab.zip
+          solution-folder: artifacts/PowerPlatformPerformanceLab
+          solution-type: Unmanaged
+          overwrite-files: true
+
+      - name: Upload solution artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: PowerPlatformPerformanceLab-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/PowerPlatformPerformanceLab.zip
+            artifacts/PowerPlatformPerformanceLab
+          if-no-files-found: error
