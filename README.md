@@ -2,7 +2,7 @@
 
 Reproducible experiments, benchmarks, and engineering patterns for Microsoft Power Platform performance.
 
-This project is for makers, developers, architects, and platform teams who want evidence-driven guidance for Power Apps, Power Fx, Dataverse, and Power Automate.
+This is a public-only open-source project. The repository owner does not need to connect a private Microsoft tenant, Dataverse environment, Entra application, client ID, tenant ID, or secret.
 
 ## Principles
 
@@ -11,10 +11,11 @@ This project is for makers, developers, architects, and platform teams who want 
 - Preserve raw observations.
 - Separate vendor-documented behavior from repository measurements.
 - Use synthetic/public data only.
-- Publish limitations and environment context.
+- Publish limitations and non-identifying environment context.
 - Never expose customer, company, tenant, user, or production identifiers.
+- Keep maintainer CI independent of private Microsoft infrastructure.
 
-See [Evidence Levels](docs/EVIDENCE_LEVELS.md) and the [Public Anonymization Standard](docs/ANONYMIZATION.md).
+See [Public-only project model](docs/PUBLIC_ONLY_MODEL.md), [Evidence Levels](docs/EVIDENCE_LEVELS.md), and the [Public Anonymization Standard](docs/ANONYMIZATION.md).
 
 ## Scope
 
@@ -39,16 +40,17 @@ Current research areas include:
 
 ```text
 .
-├── benchmarks/       Experiment definitions and raw result schemas
-├── data/             Synthetic-data guidance
-├── docs/             Methodology, evidence rules, references, diagnostics
-├── lab/              Environment-neutral benchmark harness design
-├── power-platform/   Executable Dataverse bootstrap + Canvas build spec
-├── research/         Pattern catalog and research backlog
-├── samples/          Reusable Power Fx examples
-├── tools/            Dataset generation, validation, summarization
-├── tests/            Tests for repository utilities
-├── .github/          Issue/PR templates and validation CI
+├── benchmarks/            Experiment definitions and raw result schemas
+├── community-validation/ Community process for real sanitized measurements
+├── data/                  Synthetic-data guidance
+├── docs/                  Methodology, evidence rules, references, diagnostics
+├── lab/                   Environment-neutral benchmark harness design
+├── power-platform/        Public schemas, build specs, optional bootstrap scripts
+├── research/              Pattern catalog and research backlog
+├── samples/               Reusable Power Fx examples
+├── tools/                 Dataset generation, validation, summarization
+├── tests/                 Tests for repository utilities
+├── .github/               Issue/PR templates and public CI
 ├── CONTRIBUTING.md
 ├── CODE_OF_CONDUCT.md
 └── LICENSE
@@ -71,38 +73,31 @@ Current research areas include:
 
 See the [Benchmark Catalog](benchmarks/README.md).
 
-## Benchmark harness
+## Public benchmark harness
 
 The [lab](lab/README.md) defines a generic test architecture using:
 
-- a Canvas App benchmark runner;
-- synthetic Dataverse tables;
+- a Canvas App benchmark runner specification;
+- synthetic Dataverse table definitions;
 - structured correlation IDs;
 - Power Fx `Trace()`;
 - Power Apps Live Monitor;
 - optional Application Insights telemetry;
 - Power Automate synthetic workloads.
 
-The repository does not claim a hand-written Canvas/solution package is importable. A deployable solution will be published only after it is created and validated in a real Power Platform environment using supported ALM/source-control tooling.
+The repository does not require the maintainer to provision these services.
 
+Contributors who already have authorized access to a suitable non-production Power Platform environment can reproduce a benchmark and submit sanitized results through [community validation](community-validation/README.md).
 
-## Executable Power Platform bootstrap
+## Power Platform reference workspace
 
-The repository now contains an executable bootstrap for a real non-production Dataverse environment.
+[power-platform/](power-platform/README.md) contains:
 
-It can:
+- the generic solution/table specification;
+- a Canvas App build specification;
+- optional Dataverse bootstrap/seed/validation scripts.
 
-- create the custom publisher and unmanaged `PowerPlatformPerformanceLab` solution;
-- create the generic `Benchmark Record` and `Benchmark Run` tables;
-- add the initial benchmark columns;
-- publish the metadata;
-- seed deterministic synthetic data using `CreateMultiple`;
-- validate the resulting schema;
-- export and unpack the unmanaged solution through a manually triggered GitHub Actions workflow.
-
-See [power-platform/README.md](power-platform/README.md).
-
-The Canvas benchmark runner is specified in [power-platform/canvas/BUILD_SPEC.md](power-platform/canvas/BUILD_SPEC.md). It is intentionally not represented by fabricated `.pa.yaml` files: current Canvas source should be produced by supported Power Apps tooling/Git Integration after the app is created and published.
+Those scripts are reference tooling only. No repository variable, secret, tenant ID, client ID, federated credential, or Microsoft account is required to maintain this repository.
 
 ## Quick start: synthetic data
 
@@ -122,7 +117,7 @@ python tools/validate_results.py \
 
 ## Quick start: result summary
 
-After measurements exist:
+After real measurements exist:
 
 ```bash
 python tools/summarize_results.py results/raw.csv \
@@ -132,15 +127,15 @@ python tools/summarize_results.py results/raw.csv \
 
 The summarizer reports descriptive statistics only. It never creates benchmark observations.
 
-## Observability
+## Real runtime evidence
 
-Use [Live Monitor capture guidance](docs/MONITOR_CAPTURE.md) to correlate runtime operations with benchmark runs.
+A local simulation is not treated as Power Platform runtime evidence.
 
-Use one correlation ID per measured execution and sanitize telemetry before publishing it.
+Real benchmark results must come from an actual authorized Power Platform environment and be submitted in sanitized form. This keeps the project technically credible while remaining public-only.
 
 ## Source control
 
-Canvas Apps currently use supported `.pa.yaml` source in Power Platform source-control workflows. See [Canvas App Source Control Notes](docs/SOURCE_CONTROL.md).
+The project documents current Canvas source-control practices in [Canvas App Source Control Notes](docs/SOURCE_CONTROL.md).
 
 ## References
 
@@ -148,9 +143,7 @@ Microsoft documentation used as platform context is indexed in [docs/REFERENCES.
 
 ## Contributing
 
-Contributions are welcome when they are reproducible, measurable, technically focused, and safe to publish.
-
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md) and [community-validation/README.md](community-validation/README.md).
 
 ## License
 
