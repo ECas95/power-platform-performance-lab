@@ -130,7 +130,7 @@ for ($i = 1; $i -le $Count; $i++) {
         "${PublisherPrefix}_status" = $statuses[$random.Next(0, $statuses.Count)]
         "${PublisherPrefix}_sequencenumber" = $i
         "${PublisherPrefix}_sortkey" = $random.Next(0, 1000000)
-        "${PublisherPrefix}_isselected" = if (($i % 7) -eq 0) { 1 } else { 0 }
+        "${PublisherPrefix}_isselected" = [int](($i % 7) -eq 0)
         "${PublisherPrefix}_payloadtext" = $payload
     }
 
