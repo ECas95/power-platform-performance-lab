@@ -1,0 +1,18 @@
+# Generated benchmark data
+data/*.csv
+**/generated/*.csv
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# OS/editor
+.DS_Store
+.vscode/
+.idea/
+
+# Local Power Platform exports or unpacked artifacts that may contain environment-specific data
+local/
+tmp/
