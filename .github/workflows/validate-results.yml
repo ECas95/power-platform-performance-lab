@@ -1,0 +1,31 @@
+name: Validate benchmark results
+
+on:
+  pull_request:
+    paths:
+      - "benchmarks/**/results/*.csv"
+      - "tools/validate_results.py"
+  push:
+    branches:
+      - main
+    paths:
+      - "benchmarks/**/results/*.csv"
+      - "tools/validate_results.py"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate result CSV files
+        shell: bash
+        run: |
+          mapfile -t files < <(find benchmarks -type f -path "*/results/*.csv" | sort)
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "No result CSV files found."
+            exit 0
+          fi
+          python tools/validate_results.py "${files[@]}"
