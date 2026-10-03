@@ -1,81 +1,71 @@
 # Power Platform Performance Lab
 
+[![Test benchmark utilities](https://github.com/ECas95/power-platform-performance-lab/actions/workflows/python-tools.yml/badge.svg)](https://github.com/ECas95/power-platform-performance-lab/actions/workflows/python-tools.yml)
+[![Validate benchmark results](https://github.com/ECas95/power-platform-performance-lab/actions/workflows/validate-results.yml/badge.svg)](https://github.com/ECas95/power-platform-performance-lab/actions/workflows/validate-results.yml)
+[![Validate PowerShell bootstrap](https://github.com/ECas95/power-platform-performance-lab/actions/workflows/powershell-static.yml/badge.svg)](https://github.com/ECas95/power-platform-performance-lab/actions/workflows/powershell-static.yml)
+
 Reproducible experiments, benchmarks, and engineering patterns for Microsoft Power Platform performance.
 
-This is a public-only open-source project. The repository owner does not need to connect a private Microsoft tenant, Dataverse environment, Entra application, client ID, tenant ID, or secret.
+The repository is intentionally **public-only**. Maintaining it does not require a private Microsoft tenant, Dataverse environment, Entra application, tenant ID, client ID, secret, or production account.
+
+## Project status
+
+The **public v1 baseline is complete**: experiment definitions, methodology, public tooling, validation CI, generic Power Platform build specifications, synthetic data, privacy rules, and community contribution workflows are in place.
+
+Real Power Platform runtime results are a separate evidence phase. They must come from authorized environments and are accepted only as sanitized contributions. The repository never fabricates measurements to make an experiment appear complete.
+
+See [Project Status](docs/PROJECT_STATUS.md) and [Roadmap](ROADMAP.md).
 
 ## Principles
 
 - Measure before recommending.
 - Validate correctness before comparing speed.
 - Preserve raw observations.
-- Separate vendor-documented behavior from repository measurements.
+- Separate documented platform behavior from repository measurements.
 - Use synthetic/public data only.
 - Publish limitations and non-identifying environment context.
 - Never expose customer, company, tenant, user, or production identifiers.
 - Keep maintainer CI independent of private Microsoft infrastructure.
 
-See [Public-only project model](docs/PUBLIC_ONLY_MODEL.md), [Evidence Levels](docs/EVIDENCE_LEVELS.md), and the [Public Anonymization Standard](docs/ANONYMIZATION.md).
+See [Public-only project model](docs/PUBLIC_ONLY_MODEL.md), [Evidence Levels](docs/EVIDENCE_LEVELS.md), and [Public Anonymization Standard](docs/ANONYMIZATION.md).
 
-## Scope
-
-Current research areas include:
-
-- Canvas Apps and Power Fx
-- delegation and query correctness
-- app startup and lazy loading
-- collections and local state
-- independent-call concurrency
-- Dataverse query shape
-- multi-record writes and bulk APIs
-- concurrent identifier generation
-- large-volume pagination and checkpointing
-- Power Automate throughput, retries, and concurrency
-- connector round-trips
-- observability with Live Monitor, Trace, and Application Insights
-- repeatable synthetic datasets
-- performance-oriented ALM and source-control practices
-
-## Repository structure
-
-```text
-.
-├── benchmarks/            Experiment definitions and raw result schemas
-├── community-validation/ Community process for real sanitized measurements
-├── data/                  Synthetic-data guidance
-├── docs/                  Methodology, evidence rules, references, diagnostics
-├── lab/                   Environment-neutral benchmark harness design
-├── power-platform/        Public schemas, build specs, optional bootstrap scripts
-├── research/              Pattern catalog and research backlog
-├── samples/               Reusable Power Fx examples
-├── tools/                 Dataset generation, validation, summarization
-├── tests/                 Tests for repository utilities
-├── .github/               Issue/PR templates and public CI
-├── CONTRIBUTING.md
-├── CODE_OF_CONDUCT.md
-└── LICENSE
-```
-
-## Benchmark roadmap
+## Benchmark catalog
 
 | ID | Experiment | Evidence |
 |---|---|---|
 | B001 | Delegable query vs local collection filtering | L0 |
 | B002 | Eager startup loading vs lazy loading | L0 |
-| B003 | Sequential vs Concurrent independent calls | L0 |
+| B003 | Sequential vs `Concurrent()` independent calls | L0 |
 | B004 | Multi-record update patterns | L0 |
-| B005 | StartScreen vs startup navigation logic | L0 |
+| B005 | `StartScreen` vs startup navigation logic | L0 |
 | B006 | Dataverse query payload shape | L0 |
 | B007 | Power Automate controlled concurrency | L0 |
 | B008 | Data row limit = 1 delegation guardrail | L0 |
 | B009 | Client-generated sequential IDs vs server-managed identity | L0 |
 | B010 | Large-volume pagination and checkpointing | L0 |
 
-See the [Benchmark Catalog](benchmarks/README.md).
+L0 here means the experiment is designed but has not yet earned repeated runtime evidence. See the [Benchmark Catalog](benchmarks/README.md).
+
+## Repository structure
+
+```text
+.
+├── benchmarks/            B001-B010 experiment definitions and result schemas
+├── community-validation/ Sanitized real-result contribution workflow
+├── data/                  Synthetic-data guidance
+├── docs/                  Methodology, architecture, privacy, evidence rules
+├── lab/                   Environment-neutral benchmark harness design
+├── power-platform/        Public schemas, Canvas build spec, optional bootstrap
+├── research/              Pattern catalog and research backlog
+├── samples/               Reusable Power Fx examples
+├── tools/                 Data generation, validation, privacy scan, statistics
+├── tests/                 Unit tests for repository tooling
+└── .github/               Issue templates, CODEOWNERS, public CI
+```
 
 ## Public benchmark harness
 
-The [lab](lab/README.md) defines a generic test architecture using:
+The lab defines a generic architecture using:
 
 - a Canvas App benchmark runner specification;
 - synthetic Dataverse table definitions;
@@ -85,21 +75,13 @@ The [lab](lab/README.md) defines a generic test architecture using:
 - optional Application Insights telemetry;
 - Power Automate synthetic workloads.
 
-The repository does not require the maintainer to provision these services.
+No service is required merely to clone, inspect, maintain, or contribute to the repository.
 
-Contributors who already have authorized access to a suitable non-production Power Platform environment can reproduce a benchmark and submit sanitized results through [community validation](community-validation/README.md).
+See [Repository Architecture](docs/ARCHITECTURE.md).
 
-## Power Platform reference workspace
+## Quick start
 
-[power-platform/](power-platform/README.md) contains:
-
-- the generic solution/table specification;
-- a Canvas App build specification;
-- optional Dataverse bootstrap/seed/validation scripts.
-
-Those scripts are reference tooling only. No repository variable, secret, tenant ID, client ID, federated credential, or Microsoft account is required to maintain this repository.
-
-## Quick start: synthetic data
+Generate deterministic synthetic data:
 
 ```bash
 python tools/generate_synthetic_data.py \
@@ -108,42 +90,68 @@ python tools/generate_synthetic_data.py \
   --output data/generated/benchmark-10000.csv
 ```
 
-## Quick start: result validation
+Validate a result file:
 
 ```bash
 python tools/validate_results.py \
   benchmarks/B001-delegation-vs-local-filtering/results/raw.csv
 ```
 
-## Quick start: result summary
-
-After real measurements exist:
+Scan evidence for obvious privacy risks:
 
 ```bash
-python tools/summarize_results.py results/raw.csv \
+python tools/privacy_scan.py \
+  path/to/raw.csv \
+  path/to/summary.md
+```
+
+Summarize real measurements:
+
+```bash
+python tools/summarize_results.py \
+  path/to/raw.csv \
   --group-by pattern \
   --metric duration_ms
 ```
 
-The summarizer reports descriptive statistics only. It never creates benchmark observations.
+All Python utilities use the standard library only.
 
-## Real runtime evidence
+## Power Platform reference workspace
+
+[power-platform/](power-platform/README.md) contains:
+
+- generic Dataverse schema definitions;
+- a Canvas App benchmark-runner build specification;
+- optional Dataverse bootstrap, seeding, and validation scripts.
+
+Those scripts are contributor conveniences only. No Microsoft account or private environment is required from the repository owner.
+
+## Contributing real measurements
+
+A contributor with authorized access to a suitable non-production environment can reproduce a benchmark and submit sanitized evidence.
+
+Use:
+
+- [Benchmark Authoring Guide](docs/BENCHMARK_AUTHORING.md)
+- [Community Validation](community-validation/README.md)
+- [Result Review Checklist](docs/RESULT_REVIEW_CHECKLIST.md)
+- [Result Summary Template](community-validation/summary-template.md)
 
 A local simulation is not treated as Power Platform runtime evidence.
 
-Real benchmark results must come from an actual authorized Power Platform environment and be submitted in sanitized form. This keeps the project technically credible while remaining public-only.
+## Security and privacy
 
-## Source control
+Do not publish credentials, private environment URLs, user identities, customer data, tenant details, or proprietary schemas.
 
-The project documents current Canvas source-control practices in [Canvas App Source Control Notes](docs/SOURCE_CONTROL.md).
+See [SECURITY.md](SECURITY.md) and [docs/ANONYMIZATION.md](docs/ANONYMIZATION.md).
 
 ## References
 
-Microsoft documentation used as platform context is indexed in [docs/REFERENCES.md](docs/REFERENCES.md). Documentation is not treated as a measured result.
+Microsoft documentation used as platform context is indexed in [docs/REFERENCES.md](docs/REFERENCES.md). Documentation is not treated as a measured result produced by this project.
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) and [community-validation/README.md](community-validation/README.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
