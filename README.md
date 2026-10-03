@@ -1,99 +1,129 @@
 # Power Platform Performance Lab
 
-Reproducible experiments, benchmarks, and engineering patterns for improving the performance of Microsoft Power Platform solutions.
+Reproducible experiments, benchmarks, and engineering patterns for Microsoft Power Platform performance.
 
-This repository is intended for makers, developers, architects, and platform teams who want evidence-driven guidance for Power Apps, Power Fx, Dataverse, and Power Automate instead of relying only on rules of thumb.
+This project is for makers, developers, architects, and platform teams who want evidence-driven guidance for Power Apps, Power Fx, Dataverse, and Power Automate.
 
-## Goals
+## Principles
 
-- Build reproducible performance experiments.
-- Compare common implementation patterns under controlled conditions.
-- Document trade-offs, not just "best practices".
-- Separate measured results from hypotheses and platform documentation.
-- Provide samples that can be adapted to real enterprise solutions.
-- Track changes in behavior as the Power Platform evolves.
+- Measure before recommending.
+- Validate correctness before comparing speed.
+- Preserve raw observations.
+- Separate vendor-documented behavior from repository measurements.
+- Use synthetic/public data only.
+- Publish limitations and environment context.
+- Never expose customer, company, tenant, user, or production identifiers.
+
+See [Evidence Levels](docs/EVIDENCE_LEVELS.md) and the [Public Anonymization Standard](docs/ANONYMIZATION.md).
 
 ## Scope
 
-The lab currently focuses on:
+Current research areas include:
 
 - Canvas Apps and Power Fx
-- Dataverse data access
-- Delegation and query design
-- App startup and lazy loading
-- Collections and local state
-- Bulk updates and write patterns
-- Power Automate throughput and concurrency
-- Connector call reduction
-- Error handling and resilience
-- Observability and performance diagnostics
-
-Future work may include Copilot Studio, custom connectors, Power Pages, Model-driven Apps, PCF components, and API-backed architectures.
+- delegation and query correctness
+- app startup and lazy loading
+- collections and local state
+- independent-call concurrency
+- Dataverse query shape
+- multi-record writes and bulk APIs
+- Power Automate throughput, retries, and concurrency
+- connector round-trips
+- observability with Live Monitor, Trace, and Application Insights
+- repeatable synthetic datasets
+- performance-oriented ALM and source-control practices
 
 ## Repository structure
 
 ```text
 .
-├── benchmarks/       Reproducible benchmark definitions
-├── docs/             Methodology, terminology, and findings
-├── research/         Research notes and experiment proposals
-├── samples/          Reusable Power Fx and implementation samples
-├── tools/            Utilities for measuring or generating test data
+├── benchmarks/       Experiment definitions and raw result schemas
+├── data/             Synthetic-data guidance
+├── docs/             Methodology, evidence rules, references, diagnostics
+├── lab/              Environment-neutral benchmark harness design
+├── research/         Pattern catalog and research backlog
+├── samples/          Reusable Power Fx examples
+├── tools/            Dataset generation, validation, summarization
+├── .github/          Issue/PR templates and result validation CI
 ├── CONTRIBUTING.md
 ├── CODE_OF_CONDUCT.md
-├── LICENSE
-└── README.md
+└── LICENSE
 ```
 
-## Benchmark philosophy
+## Benchmark roadmap
 
-A benchmark in this repository should answer a specific question and make the test repeatable.
-
-Every benchmark should document:
-
-1. Question being tested.
-2. Hypothesis.
-3. Environment and data source.
-4. Dataset size.
-5. Formula or flow being tested.
-6. Number of test runs.
-7. Warm-up behavior, if applicable.
-8. Metrics collected.
-9. Raw observations.
-10. Interpretation and limitations.
-
-Results should never be generalized beyond what the experiment supports.
-
-## Initial benchmark roadmap
-
-| ID | Experiment | Status |
+| ID | Experiment | Evidence |
 |---|---|---|
-| B001 | Delegable query vs local collection filtering | Planned |
-| B002 | ClearCollect-heavy startup vs lazy loading | Planned |
-| B003 | Sequential connector calls vs Concurrent | Planned |
-| B004 | ForAll update patterns and server round-trips | Planned |
-| B005 | StartScreen vs navigation logic performed during startup | Planned |
-| B006 | Dataverse query shape and column selection | Planned |
-| B007 | Power Automate concurrency and throughput | Planned |
-| B008 | Large dataset paging and delegation limits | Planned |
+| B001 | Delegable query vs local collection filtering | L0 |
+| B002 | Eager startup loading vs lazy loading | L0 |
+| B003 | Sequential vs Concurrent independent calls | L0 |
+| B004 | Multi-record update patterns | L0 |
+| B005 | StartScreen vs startup navigation logic | L0 |
+| B006 | Dataverse query payload shape | L0 |
+| B007 | Power Automate controlled concurrency | L0 |
+| B008 | Data row limit = 1 delegation guardrail | L0 |
 
-See [benchmarks/README.md](benchmarks/README.md) for the experiment format.
+See the [Benchmark Catalog](benchmarks/README.md).
 
-## What this repository is not
+## Benchmark harness
 
-This project is not an official Microsoft repository and does not replace Microsoft documentation.
+The [lab](lab/README.md) defines a generic test architecture using:
 
-Platform behavior can change. Each result must therefore include enough context to reproduce the experiment and should be revalidated when relevant platform capabilities change.
+- a Canvas App benchmark runner;
+- synthetic Dataverse tables;
+- structured correlation IDs;
+- Power Fx `Trace()`;
+- Power Apps Live Monitor;
+- optional Application Insights telemetry;
+- Power Automate synthetic workloads.
 
-## Contribution model
+The repository does not claim a hand-written Canvas/solution package is importable. A deployable solution will be published only after it is created and validated in a real Power Platform environment using supported ALM/source-control tooling.
 
-Contributions are welcome when they are:
+## Quick start: synthetic data
 
-- reproducible;
-- measurable;
-- clearly documented;
-- safe to run;
-- based on publicly shareable examples and data.
+```bash
+python tools/generate_synthetic_data.py \
+  --rows 10000 \
+  --seed 42 \
+  --output data/generated/benchmark-10000.csv
+```
+
+## Quick start: result validation
+
+```bash
+python tools/validate_results.py \
+  benchmarks/B001-delegation-vs-local-filtering/results/raw.csv
+```
+
+## Quick start: result summary
+
+After measurements exist:
+
+```bash
+python tools/summarize_results.py results/raw.csv \
+  --group-by pattern \
+  --metric duration_ms
+```
+
+The summarizer reports descriptive statistics only. It never creates benchmark observations.
+
+## Observability
+
+Use [Live Monitor capture guidance](docs/MONITOR_CAPTURE.md) to correlate runtime operations with benchmark runs.
+
+Use one correlation ID per measured execution and sanitize telemetry before publishing it.
+
+## Source control
+
+Canvas Apps currently use supported `.pa.yaml` source in Power Platform source-control workflows. See [Canvas App Source Control Notes](docs/SOURCE_CONTROL.md).
+
+## References
+
+Microsoft documentation used as platform context is indexed in [docs/REFERENCES.md](docs/REFERENCES.md). Documentation is not treated as a measured result.
+
+## Contributing
+
+Contributions are welcome when they are reproducible, measurable, technically focused, and safe to publish.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
 
