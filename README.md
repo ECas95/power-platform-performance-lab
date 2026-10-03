@@ -27,6 +27,8 @@ Current research areas include:
 - independent-call concurrency
 - Dataverse query shape
 - multi-record writes and bulk APIs
+- concurrent identifier generation
+- large-volume pagination and checkpointing
 - Power Automate throughput, retries, and concurrency
 - connector round-trips
 - observability with Live Monitor, Trace, and Application Insights
@@ -44,7 +46,8 @@ Current research areas include:
 ├── research/         Pattern catalog and research backlog
 ├── samples/          Reusable Power Fx examples
 ├── tools/            Dataset generation, validation, summarization
-├── .github/          Issue/PR templates and result validation CI
+├── tests/            Tests for repository utilities
+├── .github/          Issue/PR templates and validation CI
 ├── CONTRIBUTING.md
 ├── CODE_OF_CONDUCT.md
 └── LICENSE
@@ -62,6 +65,8 @@ Current research areas include:
 | B006 | Dataverse query payload shape | L0 |
 | B007 | Power Automate controlled concurrency | L0 |
 | B008 | Data row limit = 1 delegation guardrail | L0 |
+| B009 | Client-generated sequential IDs vs server-managed identity | L0 |
+| B010 | Large-volume pagination and checkpointing | L0 |
 
 See the [Benchmark Catalog](benchmarks/README.md).
 
