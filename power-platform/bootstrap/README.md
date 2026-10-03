@@ -1,20 +1,33 @@
-# Bootstrap scripts
+# Optional Dataverse bootstrap scripts
 
-These scripts create and validate the Dataverse portion of the lab.
+These scripts are public reference tooling for contributors who already have authorized access to a non-production Dataverse environment.
 
-## Prerequisites
+They are **not required** by the repository maintainer and are **not run by CI**.
 
-- Power Platform CLI (`pac`)
-- access to a non-production Dataverse environment
-- permission to create a publisher, unmanaged solution, tables, and columns
+## What they do
 
-Authenticate first:
+- create the generic publisher/solution;
+- create Benchmark Record and Benchmark Run tables;
+- create generic benchmark columns;
+- publish metadata;
+- seed deterministic synthetic records;
+- validate the expected metadata.
+
+## Local use by a contributor
+
+Prerequisites:
+
+- Power Platform CLI (`pac`);
+- authorized access to a non-production Dataverse environment;
+- permission to create solution components.
+
+Authenticate locally:
 
 ```powershell
 pac auth create --environment "https://<environment>.crm.dynamics.com"
 ```
 
-Then bootstrap:
+Bootstrap:
 
 ```powershell
 ./power-platform/bootstrap/Bootstrap-PerformanceLab.ps1 \
@@ -28,7 +41,7 @@ Validate:
   -EnvironmentUrl "https://<environment>.crm.dynamics.com"
 ```
 
-Seed 10,000 deterministic rows:
+Seed deterministic synthetic data:
 
 ```powershell
 ./power-platform/bootstrap/Seed-PerformanceLab.ps1 \
@@ -37,23 +50,18 @@ Seed 10,000 deterministic rows:
   -Seed 42
 ```
 
-The default dataset tag becomes `seed-42-10000`.
+## Public-repository rule
 
-The seed script refuses to intentionally seed the same tag twice unless `-AllowExisting` is supplied.
+Do not commit:
 
-## Authentication in GitHub Actions
+- environment URLs;
+- tenant/client IDs;
+- app registration details;
+- access tokens;
+- user identifiers;
+- organization names;
+- production data.
 
-The repository workflow uses GitHub OIDC/Federated Identity rather than storing a Power Platform client secret.
+Only sanitized benchmark outputs should be contributed back to the repository.
 
-Required repository variables:
-
-- `POWERPLATFORM_TENANT_ID`
-- `POWERPLATFORM_CLIENT_ID`
-
-The Entra application must:
-
-- have a federated credential for this repository/workflow context;
-- exist as an application user in the target Dataverse environment;
-- have sufficient privileges for the bootstrap operation.
-
-The workflow takes the environment URL as a manual input so no real environment address needs to be committed to source control.
+See [../../community-validation/README.md](../../community-validation/README.md).
