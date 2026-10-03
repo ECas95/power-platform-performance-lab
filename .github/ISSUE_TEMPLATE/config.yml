@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security guidance
+    url: https://github.com/ECas95/power-platform-performance-lab/blob/main/SECURITY.md
+    about: Read this before reporting anything that may contain sensitive information.
