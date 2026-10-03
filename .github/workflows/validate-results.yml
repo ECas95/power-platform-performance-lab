@@ -3,14 +3,20 @@ name: Validate benchmark results
 on:
   pull_request:
     paths:
-      - "benchmarks/**/results/*.csv"
+      - "benchmarks/**/results/**"
+      - "community-validation/**"
       - "tools/validate_results.py"
+      - "tools/privacy_scan.py"
+      - ".github/workflows/validate-results.yml"
   push:
     branches:
       - main
     paths:
-      - "benchmarks/**/results/*.csv"
+      - "benchmarks/**/results/**"
+      - "community-validation/**"
       - "tools/validate_results.py"
+      - "tools/privacy_scan.py"
+      - ".github/workflows/validate-results.yml"
 
 jobs:
   validate:
@@ -20,12 +26,25 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Validate result CSV files
+
+      - name: Validate result CSV schemas and values
         shell: bash
         run: |
           mapfile -t files < <(find benchmarks -type f -path "*/results/*.csv" | sort)
           if [ "${#files[@]}" -eq 0 ]; then
             echo "No result CSV files found."
-            exit 0
+          else
+            python tools/validate_results.py "${files[@]}"
           fi
-          python tools/validate_results.py "${files[@]}"
+
+      - name: Scan public evidence for obvious sensitive values
+        shell: bash
+        run: |
+          mapfile -t evidence < <(
+            find benchmarks community-validation               -type f \( -name "*.csv" -o -name "summary.md" \)               | sort
+          )
+          if [ "${#evidence[@]}" -eq 0 ]; then
+            echo "No evidence files found."
+          else
+            python tools/privacy_scan.py "${evidence[@]}"
+          fi
