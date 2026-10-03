@@ -43,6 +43,7 @@ Current research areas include:
 ├── data/             Synthetic-data guidance
 ├── docs/             Methodology, evidence rules, references, diagnostics
 ├── lab/              Environment-neutral benchmark harness design
+├── power-platform/   Executable Dataverse bootstrap + Canvas build spec
 ├── research/         Pattern catalog and research backlog
 ├── samples/          Reusable Power Fx examples
 ├── tools/            Dataset generation, validation, summarization
@@ -83,6 +84,25 @@ The [lab](lab/README.md) defines a generic test architecture using:
 - Power Automate synthetic workloads.
 
 The repository does not claim a hand-written Canvas/solution package is importable. A deployable solution will be published only after it is created and validated in a real Power Platform environment using supported ALM/source-control tooling.
+
+
+## Executable Power Platform bootstrap
+
+The repository now contains an executable bootstrap for a real non-production Dataverse environment.
+
+It can:
+
+- create the custom publisher and unmanaged `PowerPlatformPerformanceLab` solution;
+- create the generic `Benchmark Record` and `Benchmark Run` tables;
+- add the initial benchmark columns;
+- publish the metadata;
+- seed deterministic synthetic data using `CreateMultiple`;
+- validate the resulting schema;
+- export and unpack the unmanaged solution through a manually triggered GitHub Actions workflow.
+
+See [power-platform/README.md](power-platform/README.md).
+
+The Canvas benchmark runner is specified in [power-platform/canvas/BUILD_SPEC.md](power-platform/canvas/BUILD_SPEC.md). It is intentionally not represented by fabricated `.pa.yaml` files: current Canvas source should be produced by supported Power Apps tooling/Git Integration after the app is created and published.
 
 ## Quick start: synthetic data
 
